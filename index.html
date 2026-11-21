@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RingLeader">
+<meta name="theme-color" content="#0b0f17">
+<title>RingLeader</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="unlock" class="overlay">
+  <button id="unlockBtn" type="button">Tap to start</button>
+  <p>Connect your Bluetooth speaker first.<br>Audio unlocks on this tap.</p>
+</div>
+
+<header id="top">
+  <h1>RingLeader</h1>
+  <div class="top-actions">
+    <button id="editBtn" type="button" class="chip">Edit</button>
+    <button id="settingsBtn" type="button" class="chip" aria-label="Settings">⚙︎</button>
+  </div>
+</header>
+
+<main id="grid" aria-label="Sound buttons"></main>
+
+<footer id="transport">
+  <div id="nowPlaying">
+    <div id="npText"><span id="npLabel">Ready</span><span id="npTime"></span></div>
+    <div id="npBar"><div id="npFill"></div></div>
+  </div>
+  <button id="fadeBtn" type="button">FADE</button>
+  <button id="stopBtn" type="button">STOP</button>
+</footer>
+
+<dialog id="editor">
+  <form method="dialog" id="editorForm">
+    <h2 id="editorTitle">Button</h2>
+
+    <label>Label <input id="fLabel" maxlength="40" required></label>
+
+    <label>Sound file (MP3)
+      <input id="fFile" type="file" accept="audio/*,.mp3,.m4a,.wav">
+    </label>
+    <div id="fFileName" class="muted"></div>
+
+    <div class="preview">
+      <audio id="fPreview" controls preload="auto"></audio>
+      <div class="row">
+        <button type="button" id="setStart">Start = here</button>
+        <button type="button" id="setEnd">End = here</button>
+        <button type="button" id="tryIt">▶ Try clip</button>
+      </div>
+    </div>
+
+    <div class="row two">
+      <label>Start (m:ss) <input id="fStart" inputmode="decimal" placeholder="0:00"></label>
+      <label>End (blank = full) <input id="fEnd" inputmode="decimal" placeholder=""></label>
+    </div>
+
+    <div class="row two">
+      <label>Fade out at end (s) <input id="fFadeOut" type="number" min="0" max="10" step="0.5" value="1.5"></label>
+      <label>Volume <input id="fVolume" type="range" min="0" max="1" step="0.05" value="1"></label>
+    </div>
+
+    <label class="check"><input id="fFadeIn" type="checkbox"> Quick fade-in (0.3 s)</label>
+    <label class="check"><input id="fOverlay" type="checkbox"> Play over other sounds (don't stop what's playing)</label>
+
+    <div class="colors" id="fColors"></div>
+
+    <div class="row">
+      <button type="button" id="moveLeft">◀ Move</button>
+      <button type="button" id="moveRight">Move ▶</button>
+      <button type="button" id="deleteBtn" class="danger">Delete</button>
+    </div>
+    <div class="row end">
+      <button value="cancel" formnovalidate>Cancel</button>
+      <button id="saveBtn" value="save" class="primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="settings">
+  <form method="dialog">
+    <h2>Settings</h2>
+    <label class="check"><input id="sWake" type="checkbox"> Keep screen awake</label>
+    <label class="check"><input id="sSpeaker" type="checkbox"> Keep Bluetooth speaker awake (inaudible tone)</label>
+    <div class="row two">
+      <label>STOP fade (s) <input id="sStopFade" type="number" min="0" max="1" step="0.05"></label>
+      <label>FADE length (s) <input id="sFade" type="number" min="0.5" max="10" step="0.5"></label>
+    </div>
+    <label>Columns
+      <select id="sCols"><option value="auto">Auto</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+    </label>
+
+    <h3>Share board</h3>
+    <p class="muted">Exports every button and its sound into one file. Send it by AirDrop or Messages; the other person opens RingLeader and taps Import.</p>
+    <div class="row">
+      <button type="button" id="exportBtn" class="primary">Export board</button>
+      <label class="button-like">Import board<input id="importFile" type="file" hidden></label>
+    </div>
+
+    <h3>Storage</h3>
+    <p id="storageInfo" class="muted">…</p>
+
+    <div class="row end"><button value="close" class="primary">Done</button></div>
+  </form>
+</dialog>
+
+<div id="toast" role="status"></div>
+
+<script src="app.js" type="module"></script>
+</body>
+</html>
