@@ -213,8 +213,6 @@ document.addEventListener('visibilitychange', () => { applyWake(); if (document.
 // ---------- Rendering ----------
 function render() {
   const grid = $('#grid');
-  grid.classList.toggle('cols-fixed', board.settings.cols !== 'auto');
-  grid.style.setProperty('--cols', board.settings.cols);
   document.body.classList.toggle('editing', editing);
   $('#editBtn').textContent = editing ? 'Done' : 'Edit';
 
@@ -237,7 +235,34 @@ function render() {
     add.addEventListener('click', () => { editing = true; openEditor(null); });
     grid.append(add);
   }
+  fitGrid();
 }
+
+// Pick the column count that makes buttons as large as possible while all fit on screen.
+// Buttons look best slightly wider than tall (~1.3:1); fall back to scrolling if they'd get too small.
+const MIN_PAD_H = 64;
+function fitGrid() {
+  const grid = $('#grid');
+  const n = Math.max(1, grid.children.length);
+  const cs = getComputedStyle(grid);
+  const gap = parseFloat(cs.rowGap) || 12;
+  const W = grid.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const H = grid.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  let best = { c: 1, r: n, score: -1, h: 0 };
+  const fixed = board.settings.cols !== 'auto' ? Number(board.settings.cols) : 0;
+  for (let c = fixed || 1; c <= (fixed || n); c++) {
+    const r = Math.ceil(n / c);
+    const w = (W - gap * (c - 1)) / c, h = (H - gap * (r - 1)) / r;
+    const score = Math.min(w / 1.3, h) - (r * c - n) * 2; // prefer few empty cells
+    if (score > best.score) best = { c, r, score, h };
+  }
+  grid.style.setProperty('--c', best.c);
+  grid.style.setProperty('--r', best.r);
+  grid.style.setProperty('--minh', MIN_PAD_H + 'px');
+  grid.classList.toggle('scroll', best.h < MIN_PAD_H);
+}
+let fitTimer;
+window.addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(fitGrid, 50); });
 
 // ---------- Editor ----------
 let editTarget = null, pendingFile = null, editColor = COLORS[0], previewUrl = null;

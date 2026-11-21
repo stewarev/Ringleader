@@ -44,11 +44,12 @@ body.editing #editBtn { background: var(--fade); border-color: var(--fade); colo
 #grid {
   flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
   display: grid; gap: 12px; padding: 4px 16px 16px;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  grid-auto-rows: clamp(110px, 22vh, 200px);
-  align-content: start;
+  /* columns/rows set by fitGrid() in app.js so every button fits on screen */
+  grid-template-columns: repeat(var(--c, 3), 1fr);
+  grid-template-rows: repeat(var(--r, 3), 1fr);
+  min-height: 0;
 }
-#grid.cols-fixed { grid-template-columns: repeat(var(--cols), 1fr); }
+#grid.scroll { grid-template-rows: none; grid-auto-rows: var(--minh); }
 
 .pad {
   position: relative; border: none; border-radius: 18px;
@@ -131,6 +132,24 @@ dialog input[type=checkbox] { width: 22px; height: 22px; }
 #toast.show { opacity: 1; }
 
 @media (max-width: 420px) {
-  #grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: clamp(96px, 18vh, 160px); }
+  #grid { gap: 8px; padding: 4px 10px 10px; }
+  .pad { font-size: 18px; border-radius: 14px; }
   #stopBtn, #fadeBtn { height: 72px; }
+}
+
+/* Phone sideways: STOP/FADE move to a right-hand column so the grid keeps the full height. */
+@media (orientation: landscape) and (max-height: 500px) {
+  body {
+    display: grid; grid-template-columns: 1fr 200px; grid-template-rows: auto 1fr;
+    grid-template-areas: "top top" "grid side";
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  #top { grid-area: top; padding: 4px 16px; }
+  #grid { grid-area: grid; gap: 8px; padding: 0 8px 8px 16px; }
+  #transport {
+    grid-area: side; border-top: none; border-left: 1px solid var(--line);
+    grid-template-columns: 1fr; grid-template-rows: auto 1fr 2fr; padding: 8px;
+  }
+  #nowPlaying, #fadeBtn, #stopBtn { grid-column: 1; height: auto; }
+  #npText { flex-direction: column; }
 }
