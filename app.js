@@ -288,7 +288,8 @@ async function openEditor(btn) {
   $('#fFile').value = '';
   $('#fFileName').textContent = btn?.fileName ? `Current: ${btn.fileName}` : 'No file yet';
   $('#fStart').value = btn?.start ? fmt(btn.start) : '';
-  $('#fEnd').value = btn?.end != null ? fmt(btn.end) : '';
+  $('#fLength').value = btn?.end != null ? +(btn.end - (btn.start || 0)).toFixed(1) : '';
+  markLen();
   $('#fFadeOut').value = btn?.fadeOut ?? 1.5;
   $('#fVolume').value = btn?.volume ?? 1;
   $('#fFadeIn').checked = !!btn?.fadeIn;
@@ -309,21 +310,48 @@ $('#fFile').addEventListener('change', (e) => {
   setPreviewSource(f);
 });
 $('#setStart').addEventListener('click', () => { $('#fStart').value = fmt($('#fPreview').currentTime); });
-$('#setEnd').addEventListener('click', () => { $('#fEnd').value = fmt($('#fPreview').currentTime); });
-$('#tryIt').addEventListener('click', () => {
-  const a = $('#fPreview'); const s = parseTime($('#fStart').value) || 0; const e = parseTime($('#fEnd').value);
-  a.currentTime = s; a.play();
-  if (e != null && e > s) {
-    const stopAt = () => { if (a.currentTime >= e) { a.pause(); a.removeEventListener('timeupdate', stopAt); } };
-    a.addEventListener('timeupdate', stopAt);
-  }
+// Length is what you think in ("play 30 seconds"); we store it as an end time internally.
+const readStart = () => { const s = parseTime($('#fStart').value); return Number.isFinite(s) ? s : 0; };
+const readLen = () => { const v = String($('#fLength').value).trim(); return v === '' ? null : parseTime(v); };
+function markLen() {
+  const v = String($('#fLength').value).trim();
+  document.querySelectorAll('[data-len]').forEach((b) => b.classList.toggle('sel', b.dataset.len === v));
+}
+$('#setEnd').addEventListener('click', () => {
+  const len = $('#fPreview').currentTime - readStart();
+  if (len <= 0) { toast('Stop point must be after the start'); return; }
+  $('#fLength').value = +len.toFixed(1); markLen();
 });
+$('#fLength').addEventListener('input', markLen);
+let auditionStop = null;
+function audition() {
+  const a = $('#fPreview'); const s = readStart(); const len = readLen();
+  if (auditionStop) a.removeEventListener('timeupdate', auditionStop);
+  a.currentTime = s; a.play().catch(() => {});
+  const e = len != null && len > 0 ? s + len : null;
+  if (e != null) {
+    auditionStop = () => { if (a.currentTime >= e) { a.pause(); a.removeEventListener('timeupdate', auditionStop); auditionStop = null; } };
+    a.addEventListener('timeupdate', auditionStop);
+  }
+}
+$('#tryIt').addEventListener('click', audition);
+document.querySelectorAll('[data-nudge]').forEach((b) => b.addEventListener('click', () => {
+  const max = Number.isFinite($('#fPreview').duration) ? $('#fPreview').duration : Infinity;
+  const s = Math.min(max, Math.max(0, readStart() + Number(b.dataset.nudge)));
+  $('#fStart').value = fmt(Math.round(s * 10) / 10);
+  audition();
+}));
+document.querySelectorAll('[data-len]').forEach((b) => b.addEventListener('click', () => {
+  $('#fLength').value = b.dataset.len; markLen();
+}));
 $('#editor').addEventListener('close', async () => {
   $('#fPreview').pause();
+  if (auditionStop) { $('#fPreview').removeEventListener('timeupdate', auditionStop); auditionStop = null; }
   if ($('#editor').returnValue !== 'save') return;
   const start = parseTime($('#fStart').value) ?? 0;
-  const end = parseTime($('#fEnd').value);
-  if (Number.isNaN(start) || Number.isNaN(end) || (end != null && end <= start)) { toast('Check start/end times'); return; }
+  const len = readLen();
+  if (Number.isNaN(start) || Number.isNaN(len) || (len != null && len <= 0)) { toast('Check start time and length'); return; }
+  const end = len == null ? null : start + len;
   const btn = editTarget ?? { id: uid() };
   Object.assign(btn, {
     label: $('#fLabel').value.trim() || 'Sound',

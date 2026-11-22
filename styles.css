@@ -123,6 +123,10 @@ dialog input[type=checkbox] { width: 22px; height: 22px; }
 .row.two > * { flex: 1 1 140px; margin: 0; }
 .row.end { justify-content: flex-end; }
 .muted { color: var(--muted); font-size: 13px; }
+.row.nudge { margin: 4px 0 0; }
+.row.nudge button { flex: 1; padding: 12px 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.row.nudge button.sel { background: var(--accent); border-color: var(--accent); }
+.hint { margin: 6px 0 0; }
 .preview { background: var(--bg); border-radius: 12px; padding: 10px; margin: 8px 0; }
 .preview audio { width: 100%; }
 .colors { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }

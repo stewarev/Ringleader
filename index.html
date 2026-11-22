@@ -55,14 +55,26 @@
       <audio id="fPreview" controls preload="auto"></audio>
       <div class="row">
         <button type="button" id="setStart">Start = here</button>
-        <button type="button" id="setEnd">End = here</button>
+        <button type="button" id="setEnd">Stop = here</button>
         <button type="button" id="tryIt">▶ Try clip</button>
       </div>
     </div>
 
-    <div class="row two">
-      <label>Start (m:ss) <input id="fStart" inputmode="decimal" placeholder="0:00"></label>
-      <label>End (blank = full) <input id="fEnd" inputmode="decimal" placeholder=""></label>
+    <label>Start (m:ss) <input id="fStart" inputmode="decimal" placeholder="0:00"></label>
+    <div class="row nudge">
+      <button type="button" data-nudge="-1">−1s</button>
+      <button type="button" data-nudge="-0.1">−0.1</button>
+      <button type="button" data-nudge="0.1">+0.1</button>
+      <button type="button" data-nudge="1">+1s</button>
+    </div>
+    <p class="muted hint">Each nudge plays the clip from the new start so you can hear it.</p>
+    <label>Length (seconds — blank = rest of song) <input id="fLength" inputmode="decimal" placeholder="e.g. 30"></label>
+    <div class="row nudge">
+      <button type="button" data-len="15">15s</button>
+      <button type="button" data-len="20">20s</button>
+      <button type="button" data-len="30">30s</button>
+      <button type="button" data-len="45">45s</button>
+      <button type="button" data-len="">Full</button>
     </div>
 
     <div class="row two">
